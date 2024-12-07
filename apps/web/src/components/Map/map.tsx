@@ -25,21 +25,23 @@ import { Button } from '@/components/ui/button';
 import { ICity, ILocation, IProvince, ISubDis } from '@/type/address';
 import { Label } from '../ui/label';
 import { useAppSelector } from '@/redux/hooks';
-import LocationSelect from './Component/SelectLocation';
-import { sub } from 'date-fns';
-import { mapSchema } from '@/schemaData/schemaData';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { Card } from '../ui/card';
 import { useRouter } from 'next/navigation';
-import { handleCancel } from './action';
+import { ButtonMap, handleCancel } from './action';
 import LocationForm from './Component/formLocation';
+import { filter } from 'cypress/types/bluebird';
+import { mapSchema } from '@/schemaData/schemaData';
 
 export default function Map() {
   const mapContainerRef = useRef<any | null>(null);
   const mapRef = useRef<any | null>(null);
+  const markerRef = useRef<any | null>(null);
+
   const [map, setMap] = useState<maplibregl.Map | null>(null);
   const [marker, setMarker] = useState<maplibregl.Marker | null>(null);
+
   const [coordinates, setCoordinates] = useState<{
     lng: number | null;
     lat: number | null;
@@ -61,49 +63,28 @@ export default function Map() {
   const [selectedCity, setSelectedCity] = useState('');
   const [subdistricts, setSubdistricts] = useState<ISubDis[]>([]);
   const [selectedSubdistrict, setSelectedSubdistrict] = useState('');
+  const subdis = useRef(null)
   const [addresses, setAddresses] = useState<ILocation[]>([]);
+
   const MAP_API = process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
   const customers = useAppSelector((state) => state.customer);
   const router = useRouter();
-  const initMap = () => {
-    mapRef.current = new maplibregl.Map({
+  const initMap = useCallback(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+    const map = new maplibregl.Map({
       container: mapContainerRef.current!,
       style: `https://api.maptiler.com/maps/streets/style.json?key=${MAP_API}`,
       center: [mapState.lng, mapState.lat],
       zoom: mapState.zoom,
     });
-    setMap(mapRef.current);
-    mapRef.current.addControl(new maplibregl.NavigationControl(), 'top-right');
-
-    const mapClick = (e: maplibregl.MapMouseEvent) => {
+    map.on('click', (e) => {
       const { lng, lat } = e.lngLat;
-      const newMarker = new maplibregl.Marker({}).setLngLat([lng, lat]);
       setCoordinates({ lng, lat });
       setShowDialog(true);
-    };
-    if (marker?._lngLat === undefined) {
-      mapRef.current.on('click', mapClick);
-    } else {
-      mapRef.current.off('click', mapClick);
-    }
-  };
-  const handleConfirm = () => {
-    setShowDialog(false);
-    const lng = coordinates?.lng!;
-    const lat = coordinates?.lat!;
-    formik.setFieldValue('longitude', lng);
-    formik.setFieldValue('latitude', lat);
-    if (lng !== undefined && lat !== undefined && marker === null) {
-      const newMarker = new maplibregl.Marker({ color: 'red' })
-        .setLngLat([lng, lat])
-        .addTo(map!);
-      setMarker(newMarker);
-      setShowMap(false);
-      console.log('Marker confirmed at: ', coordinates);
-    } else {
-      console.error('Coordinate already set');
-    }
-  };
+    });
+
+    mapRef.current = map;
+  }, [MAP_API]);
 
   const formik = useFormik({
     initialValues: {
@@ -116,13 +97,90 @@ export default function Map() {
       detailAddress: '',
       customerId: customers.customerId || 0,
     },
-    // validationSchema: mapSchema,
+    validationSchema: mapSchema,
     onSubmit: (values, action) => {
       console.log(`values : ${values.customerId}`);
       sendDataMutation.mutate(values);
       action.resetForm();
     },
   });
+  // () => {
+  //   mapRef.current = new maplibregl.Map({
+  //     container: mapContainerRef.current!,
+  //     style: `https://api.maptiler.com/maps/streets/style.json?key=${MAP_API}`,
+  //     center: [mapState.lng, mapState.lat],
+  //     zoom: mapState.zoom,
+  //   });
+  //   setMap(mapRef.current);
+  //   mapRef.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+  //   const mapClick = (e: maplibregl.MapMouseEvent) => {
+  //     const { lng, lat } = e.lngLat;
+  //     const newMarker = new maplibregl.Marker({}).setLngLat([lng, lat]);
+  //     setCoordinates({ lng, lat });
+  //     setShowDialog(true);
+  //   };
+  //   if (marker?._lngLat === undefined) {
+  //     mapRef.current.on('click', mapClick);
+  //   } else {
+  //     mapRef.current.off('click', mapClick);
+  //   }
+  // };
+  const handleConfirm = useCallback(() => {
+    if (!coordinates || !mapRef.current) return;
+    if (markerRef.current) {
+      markerRef.current.remove();
+
+      const newMarker = new maplibregl.Marker({ color: 'red' })
+        .setLngLat([coordinates?.lng!, coordinates?.lat!])
+        .addTo(mapRef.current);
+
+      markerRef.current = newMarker;
+    }
+    formik.setFieldValue('longitude', coordinates?.lng);
+    formik.setFieldValue('latitude', coordinates?.lat);
+
+    if (!markerRef.current) {
+      const newMarker = new maplibregl.Marker({ color: 'red' })
+        .setLngLat([coordinates?.lng!, coordinates?.lat!])
+        .addTo(mapRef.current);
+
+      markerRef.current = newMarker;
+    }
+
+    // setShowMap(false);
+    setShowDialog(false);
+  }, [coordinates, formik]);
+console.log(coordinates)
+  // () => {
+
+  //   const lng = coordinates?.lng!;
+  //   const lat = coordinates?.lat!;
+
+  //   if (lng !== undefined && lat !== undefined && marker === null) {
+
+  //     console.log('Marker confirmed at: ', coordinates);
+  //   } else {
+  //     console.error('Coordinate already set');
+  //   }
+  // };
+
+  const fetchLocation = useCallback(async () => {
+    try {
+      const { result, ok, location } = await getDetailLocation();
+      setAddresses(location);
+      console.log(location)
+      if (!ok) throw new Error(result.msg);
+      const filterProvince = Array.from(
+              new Set(location.map((item: any) => item.province)),
+            ).map((province) => ({ province })) as IProvince[];
+            setProvinces(filterProvince)
+      setProvinces(filterProvince);
+      console.log(provinces)
+    } catch (error) {
+      toast.error('Failed to fetch location data');
+    }
+  }, []);
   const sendDataMutation = useMutation({
     mutationFn: async (data: ICustomerAddress) => await createAddress(data),
     onSuccess: (data) => {
@@ -131,15 +189,15 @@ export default function Map() {
       console.log('clicked');
       marker?.remove();
       setMarker(null);
-      setSelectedProvince('');
-      setSelectedCity('');
-      setSelectedSubdistrict('');
+      // setSelectedProvince('');
+      // setSelectedCity('');
+      // setSelectedSubdistrict('');
       toast.success(result.msg || 'Berhasil Menambah Alamat');
       router.push('/customers/profile');
     },
     onError: (err) => {
       toast.error(err?.message || 'Gagal Mengirim Data');
-      router.refresh()
+      router.refresh();
       console.log(err);
     },
   });
@@ -147,61 +205,102 @@ export default function Map() {
   const handleShowMap = () => {
     if (!showMap) setShowMap(true);
   };
-  const locationMutation = useMutation({
-    mutationFn: async () => {
-      const { result, ok, location } = await getDetailLocation();
-      if (!ok) throw result.msg;
-      return location;
-    },
-    onSuccess: (location) => {
-      setAddresses(location);
-      const filterProvince = Array.from(
-        new Set(location.map((item: any) => item.province)),
-      ).map((province) => ({ province })) as IProvince[];
-      setProvinces(filterProvince);
-    },
-    onError: (err) => {
-      console.log(err);
-    },
-  });
+  // const locationMutation = useMutation({
+  //   mutationFn: async () => {
+  //     const { result, ok, location } = await getDetailLocation();
+  //     if (!ok) throw result.msg;
+  //     return location;
+  //   },
+  //   onSuccess: (location) => {
+  //     setAddresses(location);
+  //     const filterProvince = Array.from(
+  //       new Set(location.map((item: any) => item.province)),
+  //     ).map((province) => ({ province })) as IProvince[];
+  //     setProvinces(filterProvince);
+  //   },
+  //   onError: (err) => {
+  //     console.log(err);
+  //   },
+  // });
+  const handleSelect = (field: string, value: string, cb?: () => void) => {
+    formik.setFieldValue(field, value);
+    if (field === 'province') {
+      setSelectedProvince(value);
+      if (value != '') {
+        // setSelectedCity('');
+        // setSelectedSubdistrict('');
+      }
+    } else if (field === 'city') {
+      setSelectedCity(value);
+      if (value != '') {
+        // setSelectedSubdistrict('');
+      }
+    } else if (field === 'subdistrict') {
+      // setSelectedSubdistrict(value);
+      
+      if (cb) cb();
+    }
+  };
 
-  const handleSelectProvinsi = (value: string) => {
-    setSelectedProvince(value);
-    formik.setFieldValue('province', value);
-    if (value != '') {
-      setSelectedCity('');
-      setSelectedSubdistrict('');
-    }
-  };
-  const handleSelectCity = (value: string) => {
-    setSelectedCity(value);
-    if (value != '') {
-      setSelectedSubdistrict('');
-    }
-    formik.setFieldValue('city', value);
-  };
   const handleSelectSubdistric = async (value: string) => {
-    setSelectedSubdistrict(value);
     let city = selectedCity.replace(/^(KAB\.|KOTA)\s*/, '');
     let address = `${value},${city}`;
-    const { result, ok, resLng, resLat } = await getLngLat(address);
-    console.log(result);
-    if (!ok) throw result.msg;
-    setCoordinates({
-      lat: parseFloat(resLat),
-      lng: parseFloat(resLng),
-    });
-    formik.setFieldValue('subdistrict', value);
+    try {
+      const { result, ok, resLng, resLat } = await getLngLat(address);
+      console.log(result);
+      if (!ok) throw result.msg;
+      setCoordinates({
+        lat: parseFloat(resLat),
+        lng: parseFloat(resLng),
+      });
+    } catch (err) {
+      console.log(err);
+      toast.error('Error Get Map');
+    }
+    handleSelect('subdistrict', value);
   };
+  // useEffect(() => {
+  //   // locationMutation.mutate();
+  //   if (selectedProvince != '') {
+  //     const filterCity = Array.from(
+  //       new Set(
+  //         addresses
+  //           .filter(
+  //             (item: ILocation) =>
+  //               item.province === selectedProvince.toUpperCase(),
+  //           )
+  //           .map((item: ILocation) => item.city),
+  //       ),
+  //     ).map((city) => ({ city })) as ICity[];
+  //     setCities(filterCity);
+
+  //   } else {
+  //     setCities([]);
+  //   }
+
+  //   if (selectedCity != '') {
+  //     const filterSubdistrict = Array.from(
+  //       new Set(
+  //         addresses
+  //           .filter(
+  //             (item: ILocation) => item.city === selectedCity.toUpperCase(),
+  //           )
+  //           .map((item: ILocation) => item.subdistrict),
+  //       ),
+  //     ).map((subdistrict) => ({ subdistrict })) as ISubDis[];
+  //     setSubdistricts(filterSubdistrict);
+  //   } else {
+  //     setSubdistricts([]);
+  //   }
+  // }, [selectedProvince, selectedCity]);
   useEffect(() => {
-    locationMutation.mutate();
-    if (selectedProvince != '') {
+    if (formik.values.province) {
       const filterCity = Array.from(
         new Set(
           addresses
             .filter(
               (item: ILocation) =>
-                item.province === selectedProvince.toUpperCase(),
+                item.province === formik.values.province.toUpperCase(),
             )
             .map((item: ILocation) => item.city),
         ),
@@ -211,7 +310,7 @@ export default function Map() {
       setCities([]);
     }
 
-    if (selectedCity != '') {
+    if (formik.values.city) {
       const filterSubdistrict = Array.from(
         new Set(
           addresses
@@ -222,13 +321,17 @@ export default function Map() {
         ),
       ).map((subdistrict) => ({ subdistrict })) as ISubDis[];
       setSubdistricts(filterSubdistrict);
-    } else {
-      setSubdistricts([]);
+    }else{
+      setSubdistricts([])
     }
-  }, [selectedProvince, selectedCity]);
+  }, [formik.values.province, formik.values.city]);
+  // useEffect(() => {
+  //   if (!map) initMap();
+  // }, [map, marker, mapState]);
   useEffect(() => {
     if (!map) initMap();
-  }, [map, marker, mapState]);
+    fetchLocation()
+  }, [fetchLocation]);
 
   useEffect(() => {
     if (mapRef.current && coordinates) {
@@ -253,10 +356,16 @@ export default function Map() {
                 cities={cities}
                 subdistricts={subdistricts}
                 customers={customers}
-                handleSelectProvinsi={handleSelectProvinsi}
-                handleSelectCity={handleSelectCity}
+                handleSelectProvinsi={(value: string) =>{
+
+                  handleSelect('province', value)
+                }
+                }
+                handleSelectCity={(value: string) =>
+                  handleSelect('city', value)
+                }
                 handleSelectSubdistric={handleSelectSubdistric}
-                marker={marker}
+                marker={markerRef.current}
                 sendDataMutation={sendDataMutation}
               />
             </div>
@@ -268,17 +377,15 @@ export default function Map() {
                   ? 'Delete Previous Location?'
                   : 'Confirm this location?'}
               </h3>
-              <p>Longitude: {coordinates?.lng}</p>
-              <p>Latitude: {coordinates?.lat}</p>
-
               <div className="flex justify-end mt-4 space-x-4">
-                <Button
+                <ButtonMap
+                  title="Confirm"
                   onClick={handleConfirm}
-                  className={`w-full px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600 ${marker != null ? 'hidden' : ''}`}
-                >
-                  Confirm
-                </Button>
-                <Button
+                  className={`bg-green-500 rounded-md hover:bg-green-600 ${marker != null ? 'hidden' : ''}`}
+                />
+                <ButtonMap
+                  title="Delete"
+                  className={`bg-red-500 rounded-md hover:bg-red-600 ${markerRef != null ? '' : 'hidden'}`}
                   onClick={() =>
                     handleCancel({
                       formik,
@@ -288,19 +395,17 @@ export default function Map() {
                       setCoordinates,
                     })
                   }
-                  className={`w-full px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 ${marker != null ? '' : 'hidden'}`}
-                >
-                  {marker != null ? 'Delete' : 'Cancel'}
-                </Button>
+                />
               </div>
             </div>
           )}
-          <Button
-            className={`px-4 py-2 w-full mt-4 text-white bg-blue-500 rounded-md hover:bg-blue-600 ${selectedSubdistrict != '' ? '' : 'hidden'}`}
+          {/* ${selectedSubdistrict != '' ? '' : 'hidden'} */}
+          <ButtonMap
+            title="Atur Coordinate"
+            className={`mt-3 bg-blue-500 rounded-md hover:bg-blue-600 `}
             onClick={handleShowMap}
-          >
-            Atur Coordinate
-          </Button>
+            disabled = {formik.values.subdistrict ? false : true}
+          />
         </div>
       </Card>
       <div

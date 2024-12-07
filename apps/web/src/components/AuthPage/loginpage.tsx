@@ -21,6 +21,7 @@ const loginSchema = yup.object().shape({
   email: yup.string().email().required(),
   password: yup.string().required().min(8),
 });
+
 const initialValues: ICustomerLogin = {
   email: "",
   password: ""
@@ -35,8 +36,7 @@ export const LoginPage = () => {
     mutationFn: async (data: ICustomerLogin) => await customerLogin(data),
     onSuccess: (data) => {
       const { result, ok, user } = data;
-      // if (!ok) throw result.msg;
-      // console.log()
+
       if(result.user.data.isVerified === false) {
         router.push('/customers/verify-email')
         throw new Error ('Email not verified')

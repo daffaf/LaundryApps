@@ -1,5 +1,6 @@
 // mapHandlers.ts
 import type { Marker } from 'maplibre-gl';
+import { Button } from '../ui/button';
 
 type HandleCancelProps = {
   formik: any; // Replace with the proper Formik type if available
@@ -26,3 +27,19 @@ export const handleCancel = ({
     setCoordinates(null);
   }
 };
+type ButtonMap = {
+  title : string
+  className : string
+  onClick : ()=> void
+  disabled? : boolean,
+}
+export const ButtonMap = ({
+  title,
+  onClick,
+  className,
+  disabled = false
+} : ButtonMap) => {
+  return (
+    <Button className={`w-full px-4 py-2 text-white ${className}`} onClick={onClick} disabled={disabled}>{title}</Button>
+  )
+}

@@ -11,7 +11,7 @@ import { toast } from "react-toastify"
 import { useMutation } from "@tanstack/react-query"
 const registerSchema = yup.object().shape({
   email: yup.string().email().required(),
-  fullName: yup.string().required(),
+  fullName: yup.string().max(50).required(),
 })
 const initialValues: ICustomerReg = {
   email: "",
