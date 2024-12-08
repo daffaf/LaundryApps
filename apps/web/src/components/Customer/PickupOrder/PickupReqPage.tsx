@@ -40,7 +40,16 @@ import { ICustomerAddress } from '@/type/customers';
 import { IOutletData } from '@/type/outlet';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useMutation } from '@tanstack/react-query';
-import { addDays, format, isAfter, isBefore, startOfDay } from 'date-fns';
+import {
+  addDays,
+  format,
+  isAfter,
+  isBefore,
+  isEqual,
+  isTomorrow,
+  parse,
+  startOfDay,
+} from 'date-fns';
 import { FormikHelpers, useFormik } from 'formik';
 import { CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -156,14 +165,39 @@ export const CustomerPickupPage = () => {
   const sortCustomerAddress = customerAddress.sort(
     (a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0),
   );
+
   const now = new Date();
+  const currentTime = format(new Date(), 'HH:mm');
+  // const currentTime = '18:04'// Example: "10:04"
   const today = startOfDay(now);
   const maxDate = addDays(today, 7);
-  const hour = format(now, 'HH');
-  const minute = format(now, 'MM');
-  const availableTimeslots = getFilteredTimeslots(
-    new Date(pickupFormik.values.pickupDate),
-  );
+  // Normalize function to match the 'HH:mm' format for start/end times
+  const normalizeTime: any = (time: string): string => {
+    return time; // Assuming the input time is in 'HH:mm' format already
+  };
+
+  // Filter jadwalPickup based on current time
+  const availablePickupTimes = jadwalPickup.filter((schedule) => {
+    if (pickupFormik.values.pickupDate > today) {
+      return true;
+    }
+    const now = parse(normalizeTime(currentTime), 'HH:mm', new Date());
+    const startTime = parse(normalizeTime(schedule.start), 'HH:mm', new Date());
+    const endTime = parse(normalizeTime(schedule.end), 'HH:mm', new Date());
+
+    console.log('Now:', now);
+    console.log('Start:', startTime);
+    console.log('End:', endTime);
+    const isTimeInRange = isBefore(now, endTime);
+
+    console.log('Is in range:', isTimeInRange);
+
+    return isTimeInRange;
+  });
+
+  console.log('Filtered Times:', availablePickupTimes);
+
+  console.log(availablePickupTimes);
   useEffect(() => {
     userAddress.mutate(customer.customerId);
   }, []);
@@ -220,19 +254,19 @@ export const CustomerPickupPage = () => {
             onValueChange={handleSelectTime}
             name="pickupTime"
             disabled={
-              pickupFormik.values.pickupDate.toString() === 'Invalid Date'
-                ? true
-                : false
+              pickupFormik?.values?.pickupDate
+                ? pickupFormik.values.pickupDate.toString() === 'Invalid Date'
+                : true
             }
           >
             <SelectTrigger>
               <SelectValue placeholder="Pilih Waktu Pickup" />
             </SelectTrigger>
             <SelectContent>
-              {availableTimeslots.length > 0 ? (
-                availableTimeslots.map((jadwal, index) => (
-                  <SelectItem value={jadwal} key={index}>
-                    {jadwal}
+              {availablePickupTimes && availablePickupTimes.length > 0 ? (
+                availablePickupTimes.map((jadwal, index) => (
+                  <SelectItem value={jadwal.end} key={index}>
+                    {jadwal.rng}
                   </SelectItem>
                 ))
               ) : (

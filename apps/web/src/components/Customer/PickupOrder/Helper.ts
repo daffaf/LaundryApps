@@ -8,16 +8,17 @@ const maxDate = addDays(today, 7);
 const isValidTimeSlot = (jadwal: string): boolean => {
   const [startTime] = jadwal.split(' - '); // Extract the start time
   const parsedTime = parse(startTime, 'hh.mm a', new Date());
+  console.log(parsedTime)
   return isAfter(parsedTime, new Date()); // Compare the time with the current time
 };
 
 // Filter time slots based on the selected date
 export const getFilteredTimeslots = (selectedDate: Date | null) => {
-  if (!selectedDate) return jadwalPickup;
+  if (!selectedDate) return;
 
   // For today, filter timeslots based on the current time
   if (isToday(selectedDate)) {
-    return jadwalPickup.filter(isValidTimeSlot);
+    // return jadwalPickup.filter(isValidTimeSlot);
   }
   // Return all timeslots for future dates
   return jadwalPickup;
