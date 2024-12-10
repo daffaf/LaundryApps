@@ -5,6 +5,7 @@ const Sidebar = ({children} : {children: React.ReactNode}) => {
         {title : "Home", icon : <HomeIcon />},
         {title : "About", icon : <BarChartIcon />},
         {title : "Services", icon : <BackpackIcon />},
+        {title : "Services", icon : <BackpackIcon />},
     ]
   return (
     <div className="flex">
