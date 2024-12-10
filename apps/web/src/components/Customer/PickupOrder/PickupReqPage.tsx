@@ -36,7 +36,6 @@ import {
   ICustomerAddressData,
   ICustomerAddressProfile,
 } from '@/type/address';
-import { ICustomerAddress } from '@/type/customers';
 import { IOutletData } from '@/type/outlet';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useMutation } from '@tanstack/react-query';
@@ -57,6 +56,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { jadwalPickup } from './Utils';
 import { getFilteredTimeslots } from './Helper';
+import { SelectAddress } from './AddressSelect';
 
 export const CustomerPickupPage = () => {
   const [foundOutlet, setFoundOutlet] = useState<IOutletData[]>([]);
@@ -205,22 +205,12 @@ export const CustomerPickupPage = () => {
     <section className="flex flex-col items-center w-full h-screen gap-10">
       <Card className="w-3/4 p-5 mt-32">
         <form onSubmit={formik.handleSubmit} className="space-y-3">
-          <Select onValueChange={handleSelectAddress} name="addressId">
-            <SelectTrigger>
-              <SelectValue placeholder="Pilih Alamat" />
-            </SelectTrigger>
-            <SelectContent>
-              {sortCustomerAddress.map((data, index) => (
-                <SelectItem key={index} value={data.addressId.toString()}>
-                  <p
-                    className={`${data.isPrimary === true ? 'font-semibold' : ''}`}
-                  >
-                    {`${data.detailAddress}, kec.${data.kecamatan},${data.kota}, ${data.provinsi} ${data.isPrimary === true ? '(Alamat Utama)' : ''}`}
-                  </p>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <SelectAddress 
+            onValueChange={handleSelectAddress}
+            name='addressId'
+            placeholder='Pilih Alamat'
+            option={sortCustomerAddress}
+          />
           {formik.submitCount > 0 && formik.errors.addressId && (
             <p className="text-red-500 text-sm">{formik.errors.addressId}</p>
           )}
@@ -265,7 +255,7 @@ export const CustomerPickupPage = () => {
             <SelectContent>
               {availablePickupTimes && availablePickupTimes.length > 0 ? (
                 availablePickupTimes.map((jadwal, index) => (
-                  <SelectItem value={jadwal.end} key={index}>
+                  <SelectItem value={jadwal.rng} key={index}>
                     {jadwal.rng}
                   </SelectItem>
                 ))
@@ -319,14 +309,15 @@ export const CustomerPickupPage = () => {
                     </DialogHeader>
                     <div className="flex flex-col gap-3">
                       <Label>Nama Outlet</Label>
-                      <p>{data.name}</p>
+                      <p className='font-semibold text-black'>{data.name}</p>
                       <Label>Alamat Lengkap</Label>
-                      <p>{address?.detailAddress}</p>
+                      <p className='font-semibold text-black'>{address?.detailAddress}</p>
                       <Label>Tanggal Pickup</Label>
                       {/* <p>{pickupFormik.values.customerId}</p> */}
-                      <p>{`${pickupFormik.values.pickupDate}`}</p>
+                      
+                      <p className='font-semibold text-black'>{format(pickupFormik.values.pickupDate, 'yyyy-MM-dd')}</p>
                       <Label>Waktu Pickup</Label>
-                      <p>{pickupFormik.values.pickupTime}</p>
+                      <p className='font-semibold text-black'>{pickupFormik.values.pickupTime}</p>
                     </div>
                     <DialogFooter>
                       <Button

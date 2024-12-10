@@ -15,6 +15,8 @@ export class OrderController {
       const orderIdFilter = req.query.orderId
         ? parseInt(req.query.orderId as string)
         : undefined;
+        const orderInvoiceFilter = req.query.orderInvoice ? (req.query.orderInvoice as string) : undefined;
+
       const outletIdFilter = req.query.outletId
         ? parseInt(req.query.outletId as string)
         : undefined;
@@ -37,6 +39,7 @@ export class OrderController {
             paymentStatus: paymentStatusFilter as keyof typeof PaymentStatus,
           }),
           ...(customerIdFilter && { customerId: customerIdFilter }),
+          ...(orderInvoiceFilter && { orderInvoice: orderInvoiceFilter }),
         },
         include: {
           outlet: { select: { name: true } },
@@ -78,6 +81,7 @@ export class OrderController {
             paymentStatus: paymentStatusFilter as keyof typeof PaymentStatus,
           }),
           ...(customerIdFilter && { customerId: customerIdFilter }),
+          ...(orderInvoiceFilter && { orderInvoice: orderInvoiceFilter }),
         },
       });
 

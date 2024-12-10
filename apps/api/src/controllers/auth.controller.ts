@@ -94,12 +94,11 @@ export class AuthController {
         where: { email: email }
       })
       if (!checkEmail) throw Error('Wrong Email')
-
-      const isValidPass = await compare(password, checkEmail?.password!)
-      if (!isValidPass) throw 'Wrong Password'
+        
+        const isValidPass = await compare(password, checkEmail?.password!)
+        if (!isValidPass) throw 'Wrong Password'
+        console.log(isValidPass)
       const payload = { customerId: checkEmail?.customerId!, role: checkEmail?.role! }
-
-      
       const token = jwtSign(payload, process.env.SECRET_JWT!, { expiresIn: '1d' })
       
       res.status(200).send({

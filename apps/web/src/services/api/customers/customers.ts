@@ -23,9 +23,8 @@ export const customerLogin = async (data: ICustomerLogin) => {
     },
     body: JSON.stringify(data)
   })
-  console.log(res)
   const result = await res.json()
-  return { result, ok: res.ok, user: result.user.data }
+  return { result, ok: res.ok, user: result.data }
 }
 export const customerVerify = async (data: ICustomerVerify, token: any) => {
   const url = `${BASEURL}/api/users/verify/${data.token}`

@@ -38,7 +38,9 @@ export default function EmployeeNavbarPage() {
   };
 
   return (
-    <div className="relative flex items-center h-[55px] px-4 md:px-[45px] bg-[#fffaf0] shadow-md">
+    // relative flex items-center h-[55px] px-4 md:px-[45px] bg-[#fffaf0] shadow-md
+    // sticky top-0 h-screen w-64 bg-gray-200 p-4 overflow-y-auto
+    <div className="">
       <div className="absolute left-4 md:left-[45px]">
         <Link href={'/employee'}>
           <Image src={logo} alt="logo" width={35} className="md:w-[45px]" />

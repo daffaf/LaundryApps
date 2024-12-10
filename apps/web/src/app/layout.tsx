@@ -12,12 +12,16 @@ const disabledNavbar = [
   '/employeeLogin',
   '/unauthorized',
 ];
+const showSidebar = [
+  '/dashboard'
+]
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import StoreProvider from '@/components/StoreProvider';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from '@/components/Navbar';
+import Sidebar from '@/components/NavbarPage/Sidebar';
 
 
 
@@ -35,7 +39,8 @@ export default function RootLayout({
           <StoreProvider>
             {/* <SessionProvider> */}
             {!disabledNavbar.includes(pathName) && <Navbar />}
-            {children}
+            {showSidebar.includes(pathName) ? <Sidebar children ={children} /> : children}
+            {/* {children} */}
             {/* </SessionProvider> */}
           </StoreProvider>
           <ToastContainer

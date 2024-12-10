@@ -9,7 +9,7 @@ export const employeeLogin = async (data: IEmployeeLogin) => {
   console.log(BASEURL)
   
   try {
-    const res = await fetch(`${BASEURL}/api/users/login`, {
+    const res = await fetch(`${BASEURL}/api/users/login-worker`, {
       method: 'POST',
       headers: {
       'Content-Type': 'application/json',
