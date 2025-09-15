@@ -23,9 +23,13 @@ export const customerLogin = async (data: ICustomerLogin) => {
     },
     body: JSON.stringify(data)
   })
-  console.log(res)
   const result = await res.json()
-  return { result, ok: res.ok, user: result.user.data }
+  console.log("🚀 ~ customerLogin ~ result:", result)
+  if(!res.ok)
+  {
+    throw new Error ("wrong username or password")
+  }
+  return { result, ok: res.ok, user: result.data }
 }
 export const customerVerify = async (data: ICustomerVerify, token: any) => {
   const url = `${BASEURL}/api/users/verify/${data.token}`

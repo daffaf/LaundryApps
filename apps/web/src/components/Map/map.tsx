@@ -68,7 +68,7 @@ export default function Map() {
   const initMap = () => {
     mapRef.current = new maplibregl.Map({
       container: mapContainerRef.current!,
-      style: `https://api.maptiler.com/maps/streets/style.json?key=${MAP_API}`,
+      style: `https://api.maptiler.com/maps/streets/style.json?key=qjqCINxgcSM1pLp0QPXT`,
       center: [mapState.lng, mapState.lat],
       zoom: mapState.zoom,
     });

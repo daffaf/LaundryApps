@@ -55,7 +55,7 @@ export class CopyLocation {
     }
     try {
       const API_KEY = process.env.BYNDERBYTE_API_KEY
-      console.log(API_KEY)
+      console.log("🚀 ~ CopyLocation ~ copyDetailLocation ~ API_KEY:", API_KEY)
       const urlProvinsi = `https://api.binderbyte.com/wilayah/provinsi?api_key=${API_KEY}`
       let idProvince = 1
       let idCity = 1

@@ -1,17 +1,17 @@
 import { AuthController } from "@/controllers/auth.controller";
 import { uploader } from "@/middleware/multer";
 import { verifyToken } from "@/middleware/token";
-import { FirebaseAuth } from "@/services/firebase";
+// import { FirebaseAuth } from "@/services/firebase";
 import { Router } from "express";
 
 export class UserRouter {
   private router: Router
   private authController: AuthController
-  private fireBaseAuth : FirebaseAuth
+  // private fireBaseAuth : FirebaseAuth
 
   constructor() {
     this.authController = new AuthController();
-    this.fireBaseAuth = new FirebaseAuth()
+    // this.fireBaseAuth = new FirebaseAuth()
     this.router = Router();
     this.initializeRoutes();
   }
@@ -26,7 +26,7 @@ export class UserRouter {
     this.router.post('/change-email', verifyToken, this.authController.changeEmail)
     this.router.get('/verify-email/:token', this.authController.verifyEmail)
     this.router.post('/send-emailVerification',this.authController.sendEmailVerification)
-    this.router.post('/auth/google', this.fireBaseAuth.googleAuthHandler );
+    // this.router.post('/auth/google', this.fireBaseAuth.googleAuthHandler );
     this.router.patch('/edit',
       uploader('memoryStorage', 'avatar-', '/avatar').single('avatar'),
       verifyToken

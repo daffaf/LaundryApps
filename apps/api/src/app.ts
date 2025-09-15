@@ -25,7 +25,7 @@ import cron from 'node-cron';
 import prisma from './prisma';
 import path from 'path';
 import admin from 'firebase-admin';
-export default class App {
+class App {
   private app: Express;
 
   constructor() {
@@ -81,8 +81,9 @@ export default class App {
     const orderRouter = new OrderRouter();
     const attendanceRouter = new AttendanceRouter();
     const workerRouter = new WorkerRouter();
+    
     this.app.get('/api', (req: Request, res: Response) => {
-      res.send(`Hello, Purwadhika Student API!`);
+      res.send(`Hello, API is Working!`);
     });
 
     this.app.use('/api/employee', employeeRouter.getRouter());
@@ -126,3 +127,15 @@ export default class App {
     });
   }
 }
+
+// Create instance
+const appInstance = new App();
+
+// 🚀 Export the express app (for Vercel)
+export default appInstance;
+``
+appInstance.start();
+// // 🚀 If running locally, start server
+// if (process.env.NODE_ENV !== 'production') {
+  
+// }

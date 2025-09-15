@@ -7,7 +7,7 @@ export class LocationController {
       const { address } = req.body;
       console.log(address);
       const key = process.env.OPENCAGE_API_KEY;
-      const openCageUrl = `https://api.opencagedata.com/geocode/v1/json?q=${address}&key=${`45999cc234fb4f63b5c81cf8684b84ea`}`;
+      const openCageUrl = `https://api.opencagedata.com/geocode/v1/json?q=${address}&key=${`3fc01d48104243d79861a4937bc0e954`}`;
       console.log(openCageUrl);
       const location = await fetch(`${openCageUrl}`, {
         method: 'GET',

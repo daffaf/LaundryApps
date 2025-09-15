@@ -35,14 +35,15 @@ export const LoginPage = () => {
     mutationFn: async (data: ICustomerLogin) => await customerLogin(data),
     onSuccess: (data) => {
       const { result, ok, user } = data;
+      console.log("🚀 ~ LoginPage ~ result:", result)
       // if (!ok) throw result.msg;
       // console.log()
-      if(result.user.data.isVerified === false) {
+      if(result.data.isVerified === false) {
         router.push('/customers/verify-email')
         throw new Error ('Email not verified')
       }
       dispatch(loginAction(data.user))
-      createToken(result.user.token)
+      createToken(result.token)
 
       toast.success(result.msg)
       router.push('/')

@@ -93,13 +93,12 @@ export class AuthController {
       const checkEmail = await prisma.customer.findUnique({
         where: { email: email }
       })
-      if (!checkEmail) throw Error('Wrong Email')
+      if (!checkEmail) throw new Error('Wrong Email')
 
       const isValidPass = await compare(password, checkEmail?.password!)
-      if (!isValidPass) throw 'Wrong Password'
+      if (!isValidPass) throw new Error("wrong password")
+        
       const payload = { customerId: checkEmail?.customerId!, role: checkEmail?.role! }
-
-      
       const token = jwtSign(payload, process.env.SECRET_JWT!, { expiresIn: '1d' })
       
       res.status(200).send({
