@@ -82,6 +82,10 @@ class App {
     const attendanceRouter = new AttendanceRouter();
     const workerRouter = new WorkerRouter();
     
+    this.app.get('/', (req: Request, res: Response) => {
+      res.send(`Starting...`);
+    });
+
     this.app.get('/api', (req: Request, res: Response) => {
       res.send(`Hello, API is Working!`);
     });
