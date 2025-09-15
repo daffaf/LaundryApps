@@ -133,7 +133,7 @@ const appInstance = new App();
 
 // 🚀 Export the express app (for Vercel)
 export default appInstance;
-``
+
 appInstance.start();
 // // 🚀 If running locally, start server
 // if (process.env.NODE_ENV !== 'production') {
