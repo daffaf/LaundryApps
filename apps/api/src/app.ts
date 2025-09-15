@@ -40,13 +40,16 @@ class App {
     this.app.use(cors());
     this.app.use(json());
     this.app.use(urlencoded({ extended: true }));
-
+    
     this.app.use(
       '/api/public',
       express.static(path.join(__dirname, '../public/')),
     );
   }
-
+  
+  public getApp(): Express {
+    return this.app;
+  }
   private handleError(): void {
     this.app.use((req: Request, res: Response, next: NextFunction) => {
       if (req.path.includes('/api/')) {
@@ -125,11 +128,11 @@ class App {
       }
     });
   }
-  public start(): void {
-    this.app.listen(PORT, () => {
-      console.log(`  ➜  [API] Local:   http://localhost:${PORT}/`);
-    });
-  }
+  // public start(): void {
+  //   this.app.listen(PORT, () => {
+  //     console.log(`  ➜  [API] Local:   http://localhost:${PORT}/`);
+  //   });
+  // }
 }
 
 /// Create instance

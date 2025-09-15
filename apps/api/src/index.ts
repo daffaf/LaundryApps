@@ -1,10 +1,7 @@
 import App from './app';
 
-export default App;
+// Buat instance sekali
+const app = new App();
 
-const main = () => {
-  const app = new App();
-  app.start();
-};
-
-main();
+// 🚀 Export Express app langsung (Vercel akan bungkus jadi handler)
+export default app.getApp();
