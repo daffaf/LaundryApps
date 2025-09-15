@@ -128,13 +128,12 @@ class App {
   }
 }
 
-// Create instance
-const appInstance = new App();
+/// Create instance
+// const appInstance = new App();
 
 // 🚀 Export the express app (for Vercel)
-export default appInstance;
+export default App; // ekspor Express instance langsung
 
-appInstance.start();
 // // 🚀 If running locally, start server
 // if (process.env.NODE_ENV !== 'production') {
   
