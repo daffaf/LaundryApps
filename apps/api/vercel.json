@@ -8,7 +8,7 @@
     }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "dist/index.js" }
+    { "src": "/(.*)", "dist": "dist/index.js" }
   ],
   "headers": [
     {
