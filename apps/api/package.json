@@ -10,8 +10,7 @@
     "serve": "cross-env NODE_ENV=production node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prisma": "npx prisma",
-    "postinstall": "prisma generate",
-    "prepare": "husky install"
+    "postinstall": "prisma generate"
   },
   "author": "",
   "license": "ISC",
@@ -62,7 +61,6 @@
     "passport-jwt": "^4.0.1",
     "prisma": "^5.21.1",
     "tsc-alias": "^1.8.10",
-    "tsconfig-paths": "^4.2.0",
-    "husky": "^9.1.6"
+    "tsconfig-paths": "^4.2.0"
   }
 }
